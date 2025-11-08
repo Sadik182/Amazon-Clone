@@ -3,11 +3,21 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --amazon-blue: #131921;
+  --amazon-light: #232F3E;
+}
+
+@layer components {
+  .link {
+    @apply hover:underline cursor-pointer;
+  }
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-amazon-blue: var(--amazon-blue);
+  --color-amazon-light: var(--amazon-light);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
