@@ -29,7 +29,7 @@ function ProductFeed({ products }: ProductFeedProps) {
         />
       ))}
       <img
-        className="md:col-span-full"
+        className="md:col-span-full ml-5"
         src="https://links.papareact.com/dyz"
         alt="ad"
       />
