@@ -13,15 +13,22 @@ export const authOptions: NextAuthOptions = {
     }),
     // Add more providers here
   ],
-  pages: {
-    signIn: "/auth/signin", // Custom sign-in page (optional)
-  },
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
     async session({ session, token }) {
-      // Add custom data to session if needed
+      if (session.user && token.id) {
+        (session.user as { id?: string }).id = token.id as string;
+      }
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === "development",
 };
 
 const handler = NextAuth(authOptions);
