@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import {
@@ -5,8 +6,10 @@ import {
   ShoppingCartIcon,
   Bars3Icon as MenuIcon,
 } from "@heroicons/react/24/outline";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 function Header() {
+  const { data: session } = useSession();
   return (
     <header>
       {/* Top Navbar */}
@@ -33,8 +36,11 @@ function Header() {
 
         {/* Right */}
         <div className="text-white flex items-center text-xs space-x-6 mx-6 whitespace-nowrap">
-          <div className="link">
-            <p>Hello, Md Sadikur Rahman</p>
+          <div
+            onClick={() => (session ? signOut() : signIn())}
+            className="link cursor-pointer"
+          >
+            <p>Hello, {session?.user?.name || "Guest"}</p>
             <p className="font-extrabold md:text-sm">Account & Lists</p>
           </div>
           <div className="link">
