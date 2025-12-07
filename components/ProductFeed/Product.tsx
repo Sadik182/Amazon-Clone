@@ -2,6 +2,9 @@
 import React, { useMemo } from "react";
 import Image from "next/image";
 import { StarIcon } from "@heroicons/react/24/solid";
+import { useDispatch } from "react-redux";
+import { addToBasket } from "@/slices/basketSlice";
+import { toast } from "react-hot-toast";
 
 interface ProductProps {
   id: number;
@@ -20,6 +23,7 @@ function Product({
   category,
   image,
 }: ProductProps) {
+  const dispatch = useDispatch();
   // Generate deterministic rating based on product ID to avoid hydration mismatch
   const rating = useMemo(() => {
     // Simple hash function to generate consistent rating per product ID
@@ -42,6 +46,18 @@ function Product({
     style: "currency",
     currency: "USD",
   }).format(price);
+  const addItemToBasket = () => {
+    const product = {
+      id,
+      title,
+      price,
+      description,
+      category,
+      image,
+    };
+    dispatch(addToBasket(product));
+    toast.success(`${title} added to basket`);
+  };
 
   return (
     <div className="relative flex flex-col m-5 bg-white z-30 p-10">
@@ -76,7 +92,12 @@ function Product({
           <p className="text-xs text-gray-500">FREE Next-day Delivery</p>
         </div>
       )}
-      <button className="mt-auto button cursor-pointer">Add to Basket</button>
+      <button
+        onClick={addItemToBasket}
+        className="mt-auto button cursor-pointer"
+      >
+        Add to Basket
+      </button>
     </div>
   );
 }
