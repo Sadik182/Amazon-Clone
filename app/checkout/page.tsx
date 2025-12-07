@@ -5,9 +5,15 @@ import Image from "next/image";
 import { useSelector } from "react-redux";
 import { selectItems } from "@/slices/basketSlice";
 import CheckOutProduct from "@/components/CheckOutProduct/CheckOutProduct";
+import { useSession } from "next-auth/react";
 
 function Checkout() {
+  const { data: session } = useSession();
   const items = useSelector(selectItems);
+  const formattedTotal = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(items.reduce((acc, item) => acc + item.price, 0));
   return (
     <div className="bg-gray-100">
       <Header />
@@ -44,12 +50,28 @@ function Checkout() {
           </div>
         </div>
         {/* Right */}
-        <div>
-          <h2 className="whitespace-nowrap"></h2>
+        <div className="flex flex-col bg-white p-10 shadow-md">
+          {items.length > 0 && (
+            <>
+              <h2 className="whitespace-nowrap">
+                Subtotal ({items.length} items):
+                <span className="font-bold">{formattedTotal}</span>
+              </h2>
+              <button
+                disabled={!session}
+                className={`button mt-2 ${
+                  !session
+                    ? "from-gray-300 to-gray-500 border-gray-200 text-gray-300 cursor-not-allowed"
+                    : ""
+                }`}
+              >
+                {!session ? "Sign in to checkout" : "Proceed to Checkout"}
+              </button>
+            </>
+          )}
         </div>
       </main>
     </div>
   );
 }
-
 export default Checkout;
