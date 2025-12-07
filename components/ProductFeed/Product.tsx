@@ -4,7 +4,7 @@ import Image from "next/image";
 import { StarIcon } from "@heroicons/react/24/solid";
 import { useDispatch } from "react-redux";
 import { addToBasket } from "@/slices/basketSlice";
-import { toast } from "react-hot-toast";
+import { useToast } from "@/components/Toast/ToastContext";
 
 interface ProductProps {
   id: number;
@@ -24,6 +24,7 @@ function Product({
   image,
 }: ProductProps) {
   const dispatch = useDispatch();
+  const { showToast } = useToast();
   // Generate deterministic rating based on product ID to avoid hydration mismatch
   const rating = useMemo(() => {
     // Simple hash function to generate consistent rating per product ID
@@ -54,9 +55,11 @@ function Product({
       description,
       category,
       image,
+      hasPrime,
+      rating,
     };
     dispatch(addToBasket(product));
-    toast.success(`${title} added to basket`);
+    showToast(`${title} added to basket`, "success");
   };
 
   return (

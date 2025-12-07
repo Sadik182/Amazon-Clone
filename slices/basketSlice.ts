@@ -3,11 +3,14 @@ import { RootState } from "@/app/store";
 
 export interface BasketItem {
   id: number;
+  basketId?: string; // Unique identifier for each basket item instance
   title: string;
   price: number;
   description: string;
   category: string;
   image: string;
+  hasPrime: boolean;
+  rating: number;
 }
 
 interface BasketState {
@@ -23,9 +26,17 @@ export const basketSlice = createSlice({
   initialState,
   reducers: {
     addToBasket: (state, action: PayloadAction<BasketItem>) => {
-      state.items = [...state.items, action.payload];
+      const newItem = {
+        ...action.payload,
+        basketId: `${action.payload.id}-${Date.now()}-${Math.random()}`,
+      };
+      state.items = [...state.items, newItem];
     },
-    removeFromBasket: (state, action: PayloadAction<number>) => {},
+    removeFromBasket: (state, action: PayloadAction<string>) => {
+      state.items = state.items.filter(
+        (item) => item.basketId !== action.payload
+      );
+    },
   },
 });
 

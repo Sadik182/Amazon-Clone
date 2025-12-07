@@ -1,8 +1,13 @@
+"use client";
 import Header from "@/components/Header/Header";
 import React from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+import { selectItems } from "@/slices/basketSlice";
+import CheckOutProduct from "@/components/CheckOutProduct/CheckOutProduct";
 
 function Checkout() {
+  const items = useSelector(selectItems);
   return (
     <div className="bg-gray-100">
       <Header />
@@ -17,14 +22,31 @@ function Checkout() {
             objectFit="contain"
           />
           <div className="flex flex-col p-5 space-y-10 bg-white">
-            <h1 className="text-3xl border-b pb-4">Your Shopping Basket</h1>
-          </div>
-          <div className="flex flex-col p-5 space-y-10 bg-white">
-            <h2 className="whitespace-nowrap">Your Amazon Basket Items</h2>
+            <h1 className="text-3xl border-b pb-4">
+              {items.length === 0
+                ? "Your Amazon Basket is empty"
+                : "Shopping Items"}
+            </h1>
+            {items.map((item, index) => (
+              <CheckOutProduct
+                key={item.basketId || `${item.id}-${index}`}
+                id={item.id}
+                basketId={item.basketId}
+                title={item.title}
+                price={item.price}
+                description={item.description}
+                category={item.category}
+                image={item.image}
+                hasPrime={item.hasPrime}
+                rating={item.rating}
+              />
+            ))}
           </div>
         </div>
         {/* Right */}
-        <div></div>
+        <div>
+          <h2 className="whitespace-nowrap"></h2>
+        </div>
       </main>
     </div>
   );
