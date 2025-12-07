@@ -4,6 +4,7 @@ import Image from "next/image";
 import { addToBasket, removeFromBasket } from "@/slices/basketSlice";
 import { useDispatch } from "react-redux";
 import { useToast } from "@/components/Toast/ToastContext";
+import Currency from "@/components/Currency/Currency";
 
 interface CheckOutProductProps {
   id: number;
@@ -30,10 +31,6 @@ function CheckOutProduct({
 }: CheckOutProductProps) {
   const dispatch = useDispatch();
   const { showToast } = useToast();
-  const formattedPrice = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(price);
 
   const addItemToBasket = () => {
     const product = {
@@ -77,7 +74,9 @@ function CheckOutProduct({
               ))}
           </p>
           <p className="text-xs my-2 line-clamp-3">{description}</p>
-          <p className="mb-2">{formattedPrice}</p>
+          <p className="mb-2">
+            <Currency amount={price} />
+          </p>
           {hasPrime && (
             <div className="flex items-center space-x-2">
               <img

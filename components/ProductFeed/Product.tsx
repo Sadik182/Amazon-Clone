@@ -5,6 +5,7 @@ import { StarIcon } from "@heroicons/react/24/solid";
 import { useDispatch } from "react-redux";
 import { addToBasket } from "@/slices/basketSlice";
 import { useToast } from "@/components/Toast/ToastContext";
+import Currency from "@/components/Currency/Currency";
 
 interface ProductProps {
   id: number;
@@ -42,11 +43,6 @@ function Product({
       .reduce((acc, char) => acc + char.charCodeAt(0), 0);
     return hash % 2 === 0;
   }, [id]);
-
-  const formattedPrice = new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(price);
   const addItemToBasket = () => {
     const product = {
       id,
@@ -84,7 +80,9 @@ function Product({
           ))}
       </div>
       <p className="text-xs my-2 line-clamp-2">{description}</p>
-      <p className="mb-5">{formattedPrice}</p>
+      <p className="mb-5">
+        <Currency amount={price} />
+      </p>
       {hasPrime && (
         <div className="flex items-center space-x-2 -mt-5">
           <img
