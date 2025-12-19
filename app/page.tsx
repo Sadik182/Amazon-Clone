@@ -3,34 +3,52 @@ import Banner from "@/components/Banner/Banner";
 import ProductFeed from "@/components/ProductFeed/ProductFeed";
 
 export const revalidate = 60; // Revalidate every 60 seconds
+export const dynamic = "force-dynamic"; // Force dynamic rendering to avoid build-time fetch issues
 
 async function getProducts() {
   try {
     const res = await fetch("https://fakestoreapi.com/products", {
       next: { revalidate: 60 }, // Cache for 60 seconds
       headers: {
-        "User-Agent": "Mozilla/5.0",
         Accept: "application/json",
       },
     });
 
     if (!res.ok) {
-      // Log but don't throw - return empty array to allow build to succeed
-      console.warn(`API returned ${res.status}, using empty products array`);
+      // Log error with details for Vercel logs
+      console.error(
+        `[Products API] Failed with status ${res.status} ${res.statusText}`
+      );
+      console.error(`[Products API] Response URL: ${res.url}`);
       return [];
     }
 
     const contentType = res.headers.get("content-type");
     if (!contentType || !contentType.includes("application/json")) {
-      console.warn("Response is not JSON, using empty products array");
+      console.error(`[Products API] Invalid content-type: ${contentType}`);
       return [];
     }
 
     const products = await res.json();
-    return Array.isArray(products) ? products : [];
-  } catch {
-    // Silently fail during build - return empty array
-    // This prevents build failures when API is unavailable
+
+    if (!Array.isArray(products)) {
+      console.error(
+        `[Products API] Response is not an array, got: ${typeof products}`
+      );
+      return [];
+    }
+
+    console.log(
+      `[Products API] Successfully fetched ${products.length} products`
+    );
+    return products;
+  } catch (error) {
+    // Log the actual error for debugging in Vercel logs
+    console.error("[Products API] Error fetching products:", error);
+    if (error instanceof Error) {
+      console.error("[Products API] Error message:", error.message);
+      console.error("[Products API] Error stack:", error.stack);
+    }
     return [];
   }
 }
