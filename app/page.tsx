@@ -8,6 +8,9 @@ export const dynamic = "force-dynamic"; // Force dynamic rendering to avoid buil
 async function getProducts() {
   // Try internal API route first (more reliable on Vercel)
   try {
+    // Use absolute URL construction for Vercel
+    // VERCEL_URL and VERCEL_BRANCH_URL are automatically provided by Vercel
+    // You can optionally set NEXT_PUBLIC_BASE_URL in Vercel dashboard if needed
     const baseUrl = process.env.VERCEL_URL
       ? `https://${process.env.VERCEL_URL}`
       : process.env.VERCEL_BRANCH_URL
@@ -22,6 +25,8 @@ async function getProducts() {
       headers: {
         Accept: "application/json",
       },
+      // Important: Don't cache internal API calls
+      cache: "no-store",
     });
 
     if (res.ok) {
