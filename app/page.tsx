@@ -6,88 +6,39 @@ export const revalidate = 60; // Revalidate every 60 seconds
 export const dynamic = "force-dynamic"; // Force dynamic rendering to avoid build-time fetch issues
 
 async function getProducts() {
-  // Try internal API route first (more reliable on Vercel)
   try {
-    // Use absolute URL construction for Vercel
-    // VERCEL_URL and VERCEL_BRANCH_URL are automatically provided by Vercel
-    // You can optionally set NEXT_PUBLIC_BASE_URL in Vercel dashboard if needed
-    const baseUrl = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.VERCEL_BRANCH_URL
-      ? `https://${process.env.VERCEL_BRANCH_URL}`
-      : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    console.log("[Page] Fetching products from fakestoreapi.com");
 
-    const apiUrl = `${baseUrl}/api/products`;
-    console.log(`[Page] Attempting to fetch from API route: ${apiUrl}`);
-
-    const res = await fetch(apiUrl, {
-      next: { revalidate: 60 },
-      headers: {
-        Accept: "application/json",
-      },
-      // Important: Don't cache internal API calls
-      cache: "no-store",
-    });
-
-    if (res.ok) {
-      const products = await res.json();
-      const productArray = Array.isArray(products)
-        ? products
-        : products?.products || [];
-
-      if (Array.isArray(productArray) && productArray.length > 0) {
-        console.log(
-          `[Page] Successfully received ${productArray.length} products from API route`
-        );
-        return productArray;
-      }
-    }
-
-    console.warn(
-      `[Page] API route failed or returned empty, trying direct fetch`
-    );
-  } catch (apiRouteError) {
-    console.warn(
-      `[Page] API route error, falling back to direct fetch:`,
-      apiRouteError
-    );
-  }
-
-  // Fallback: Direct fetch from external API
-  try {
-    console.log(`[Page] Fetching directly from fakestoreapi.com`);
+    // Fetch directly from external API - this works reliably on Vercel
     const res = await fetch("https://fakestoreapi.com/products", {
+      // Use revalidate for ISR (Incremental Static Regeneration)
       next: { revalidate: 60 },
       headers: {
         Accept: "application/json",
       },
     });
+
+    console.log(`[Page] Response status: ${res.status}`);
 
     if (!res.ok) {
-      console.error(
-        `[Page] Direct API returned ${res.status} ${res.statusText}`
-      );
+      console.error(`[Page] API returned ${res.status} ${res.statusText}`);
       return [];
     }
 
     const products = await res.json();
 
     if (!Array.isArray(products)) {
-      console.error(`[Page] Direct API response is not an array`);
+      console.error(`[Page] Response is not an array, got: ${typeof products}`);
       return [];
     }
 
-    console.log(
-      `[Page] Successfully received ${products.length} products from direct API`
-    );
+    console.log(`[Page] Successfully fetched ${products.length} products`);
     return products;
   } catch (error) {
-    console.error(
-      "[Page] Error fetching products (both methods failed):",
-      error
-    );
+    console.error("[Page] Error fetching products:", error);
     if (error instanceof Error) {
       console.error("[Page] Error message:", error.message);
+      console.error("[Page] Error stack:", error.stack);
     }
     return [];
   }
