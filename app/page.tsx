@@ -6,40 +6,59 @@ export const revalidate = 60; // Revalidate every 60 seconds
 export const dynamic = "force-dynamic"; // Force dynamic rendering to avoid build-time fetch issues
 
 async function getProducts() {
+  // Use internal API route to avoid 403 errors from external API
+  // The API route runs on Vercel serverless functions which are less likely to be blocked
   try {
-    console.log("[Page] Fetching products from fakestoreapi.com");
+    // Get the base URL - use Vercel's automatic environment variables
+    const baseUrl = process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : process.env.VERCEL_BRANCH_URL
+      ? `https://${process.env.VERCEL_BRANCH_URL}`
+      : "http://localhost:3000";
 
-    // Fetch directly from external API - this works reliably on Vercel
-    const res = await fetch("https://fakestoreapi.com/products", {
-      // Use revalidate for ISR (Incremental Static Regeneration)
+    const apiUrl = `${baseUrl}/api/products`;
+    console.log(`[Page] Fetching products from API route: ${apiUrl}`);
+
+    const res = await fetch(apiUrl, {
       next: { revalidate: 60 },
       headers: {
         Accept: "application/json",
       },
+      cache: "no-store", // Don't cache the API route call
     });
 
-    console.log(`[Page] Response status: ${res.status}`);
+    console.log(`[Page] API route response status: ${res.status}`);
 
     if (!res.ok) {
-      console.error(`[Page] API returned ${res.status} ${res.statusText}`);
+      console.error(
+        `[Page] API route returned ${res.status} ${res.statusText}`
+      );
+      // Don't fallback - API route should handle retries
+      // If it still fails, return empty array
       return [];
     }
 
     const products = await res.json();
 
-    if (!Array.isArray(products)) {
-      console.error(`[Page] Response is not an array, got: ${typeof products}`);
+    // Handle both array response and error response
+    if (Array.isArray(products)) {
+      console.log(`[Page] Successfully received ${products.length} products`);
+      return products;
+    }
+
+    // If API route returned an error object, log it but don't fallback
+    if (products.error) {
+      console.error(`[Page] API route error: ${products.error}`);
       return [];
     }
 
-    console.log(`[Page] Successfully fetched ${products.length} products`);
-    return products;
+    return [];
   } catch (error) {
-    console.error("[Page] Error fetching products:", error);
+    console.error("[Page] Error fetching from API route:", error);
     if (error instanceof Error) {
-      console.error("[Page] Error message:", error.message);
-      console.error("[Page] Error stack:", error.stack);
+      console.error("[Page] Error details:", error.message);
     }
+    // Don't fallback to direct fetch - it will also get 403
     return [];
   }
 }
