@@ -16,98 +16,33 @@ export async function GET() {
         await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
       }
 
-      console.log("[API Route] Fetching products from fakestoreapi.com");
+      console.log("[API Route] Fetching products from dummyjson.com");
 
       // Create AbortController for timeout handling
-      let controller = new AbortController();
-      let timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      // Try fakestoreapi.com first
-      let res = await fetch("https://fakestoreapi.com/products", {
+      // Use dummyjson.com as primary API (works reliably with Vercel)
+      const res = await fetch("https://dummyjson.com/products?limit=20", {
         headers: {
           Accept: "application/json",
-          "Accept-Language": "en-US,en;q=0.9",
-          "Cache-Control": "no-cache",
-          Referer: "https://fakestoreapi.com/",
         },
         signal: controller.signal,
         cache: "no-store",
       });
 
-      // If 403 on first attempt, try alternative API
-      if (res.status === 403 && attempt === 1) {
-        console.log(
-          "[API Route] fakestoreapi.com blocked (403), trying alternative API..."
-        );
-        clearTimeout(timeoutId);
-
-        const altController = new AbortController();
-        const altTimeoutId = setTimeout(() => altController.abort(), 10000);
-
-        // Try dummyjson.com as alternative (more reliable, doesn't block Vercel)
-        try {
-          const altRes = await fetch(
-            "https://dummyjson.com/products?limit=20",
-            {
-              headers: {
-                Accept: "application/json",
-              },
-              signal: altController.signal,
-              cache: "no-store",
-            }
-          );
-
-          clearTimeout(altTimeoutId);
-
-          if (altRes.ok) {
-            const altProducts = await altRes.json();
-            // dummyjson returns { products: [...] } format
-            if (altProducts.products && Array.isArray(altProducts.products)) {
-              console.log(
-                `[API Route] Using alternative API (dummyjson), got ${altProducts.products.length} products`
-              );
-              return NextResponse.json(altProducts.products, {
-                status: 200,
-                headers: {
-                  "Cache-Control":
-                    "public, s-maxage=60, stale-while-revalidate=120",
-                },
-              });
-            }
-          }
-        } catch (altError) {
-          console.warn("[API Route] Alternative API also failed:", altError);
-        }
-
-        // Continue with retry logic for fakestoreapi
-        controller = new AbortController();
-        timeoutId = setTimeout(() => controller.abort(), 10000);
-        res = await fetch("https://fakestoreapi.com/products", {
-          headers: {
-            Accept: "application/json",
-            "Accept-Language": "en-US,en;q=0.9",
-            "Cache-Control": "no-cache",
-            Referer: "https://fakestoreapi.com/",
-          },
-          signal: controller.signal,
-          cache: "no-store",
-        });
-      }
-
       clearTimeout(timeoutId);
 
       console.log(`[API Route] Response status: ${res.status}`);
 
-      // If 403, retry (might be rate limiting)
-      if (res.status === 403 && attempt < maxRetries) {
-        console.warn(
-          `[API Route] Got 403, will retry (attempt ${attempt}/${maxRetries})`
-        );
-        lastError = new Error(`403 Forbidden - attempt ${attempt}`);
-        continue;
-      }
-
       if (!res.ok) {
+        if (attempt < maxRetries) {
+          console.warn(
+            `[API Route] Got ${res.status}, will retry (attempt ${attempt}/${maxRetries})`
+          );
+          lastError = new Error(`API returned ${res.status}`);
+          continue;
+        }
         console.error(
           `[API Route] API returned ${res.status} ${res.statusText}`
         );
@@ -126,11 +61,12 @@ export async function GET() {
         );
       }
 
-      const products = await res.json();
+      const data = await res.json();
 
-      if (!Array.isArray(products)) {
+      // dummyjson returns { products: [...] } format
+      if (!data.products || !Array.isArray(data.products)) {
         console.error(
-          `[API Route] Response is not an array, got: ${typeof products}`
+          `[API Route] Response is not in expected format, got: ${typeof data}`
         );
         return NextResponse.json(
           { error: "Invalid response format", products: [] },
@@ -138,11 +74,25 @@ export async function GET() {
         );
       }
 
-      console.log(
-        `[API Route] Successfully fetched ${products.length} products`
+      // Transform dummyjson products to match our component's expected format
+      const transformedProducts = data.products.map(
+        (product: {
+          thumbnail?: string;
+          images?: string[];
+          [key: string]: unknown;
+        }) => ({
+          ...product,
+          // Use thumbnail if available, otherwise use first image from images array
+          image:
+            product.thumbnail || (product.images && product.images[0]) || "",
+        })
       );
 
-      return NextResponse.json(products, {
+      console.log(
+        `[API Route] Successfully fetched ${transformedProducts.length} products from dummyjson`
+      );
+
+      return NextResponse.json(transformedProducts, {
         status: 200,
         headers: {
           "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",

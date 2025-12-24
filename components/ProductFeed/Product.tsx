@@ -64,12 +64,12 @@ function Product({
         {category}
       </p>
       <Image
-        src={image}
+        src={image || "/placeholder.png"}
         alt={title}
         width={200}
         height={200}
-        objectFit="contain"
-        className="mx-auto"
+        className="mx-auto object-contain"
+        style={{ objectFit: "contain" }}
       />
       <h4 className="my-3">{title}</h4>
       <div className="flex">
