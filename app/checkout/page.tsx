@@ -7,11 +7,46 @@ import { selectItems, selectTotal } from "@/slices/basketSlice";
 import CheckOutProduct from "@/components/CheckOutProduct/CheckOutProduct";
 import { useSession } from "next-auth/react";
 import Currency from "@/components/Currency/Currency";
+import axios from "axios";
+import { loadStripe } from "@stripe/stripe-js";
+const stripePromise = loadStripe(process.env.stripe_public_key || "");
 
 function Checkout() {
   const { data: session } = useSession();
   const items = useSelector(selectItems);
   const total = useSelector(selectTotal);
+  const createCheckoutSession = async () => {
+    try {
+      // Create checkout session
+      const checkoutSession = await axios.post("/api/create-checkout-session", {
+        items,
+        email: session?.user?.email,
+      });
+      // Redirect to checkout session using session URL
+      if (checkoutSession.data.url) {
+        window.location.href = checkoutSession.data.url;
+      } else {
+        alert("Checkout session URL is missing");
+      }
+    } catch (error: unknown) {
+      console.error("Checkout error:", error);
+      const errorMessage =
+        error &&
+        typeof error === "object" &&
+        "response" in error &&
+        error.response &&
+        typeof error.response === "object" &&
+        "data" in error.response &&
+        error.response.data &&
+        typeof error.response.data === "object" &&
+        ("error" in error.response.data || "details" in error.response.data)
+          ? (error.response.data as { error?: string; details?: string })
+              .details ||
+            (error.response.data as { error?: string; details?: string }).error
+          : "Failed to create checkout session";
+      alert(`Error: ${errorMessage}`);
+    }
+  };
   return (
     <div className="bg-gray-100">
       <Header />
@@ -58,6 +93,8 @@ function Checkout() {
                 </span>
               </h2>
               <button
+                role="link"
+                onClick={createCheckoutSession}
                 disabled={!session}
                 className={`button mt-2 ${
                   !session
