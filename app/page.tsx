@@ -1,6 +1,7 @@
 import Header from "@/components/Header/Header";
 import Banner from "@/components/Banner/Banner";
 import ProductFeed from "@/components/ProductFeed/ProductFeed";
+import Footer from "@/components/Footer/Footer";
 
 export const revalidate = 60; // Revalidate every 60 seconds
 export const dynamic = "force-dynamic"; // Force dynamic rendering to avoid build-time fetch issues
@@ -66,14 +67,15 @@ export default async function Home() {
   const products = await getProducts();
 
   return (
-    <div className="bg-gray-100">
+    <div className="bg-gray-100 min-h-screen flex flex-col">
       <Header />
-      <main className="max-w-screen-2xl mx-auto">
+      <main className="max-w-screen-2xl mx-auto flex-grow">
         {/* Banner */}
         <Banner />
         {/* Product Feed */}
         <ProductFeed products={products} />
       </main>
+      <Footer />
     </div>
   );
 }
