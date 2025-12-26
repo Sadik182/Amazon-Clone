@@ -12,9 +12,10 @@ function Footer() {
       {/* Back to top button */}
       <div
         onClick={scrollToTop}
-        className="bg-amazon-blue py-4 text-center text-sm cursor-pointer hover:bg-opacity-90 transition-colors"
+        className="bg-amazon-blue py-4 text-center text-sm cursor-pointer hover:bg-opacity-90 transition-colors flex items-center justify-center gap-2 mb-4 mx-auto"
       >
-        <p>Back to top</p>
+        <p className="text-white">Back to top</p>
+        <ArrowUpIcon className="h-5 w-5" />
       </div>
 
       {/* Main footer content */}
@@ -77,24 +78,6 @@ function Footer() {
               <li className="link">Amazon Assistant</li>
               <li className="link">Help</li>
             </ul>
-          </div>
-        </div>
-
-        {/* Logo and language selector */}
-        <div className="mt-8 pt-8 border-t border-gray-600">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="flex items-center space-x-4">
-              <img
-                src="https://links.papareact.com/f90"
-                alt="Amazon Logo"
-                className="h-6 w-auto object-contain"
-              />
-            </div>
-            <div className="flex flex-wrap justify-center gap-4 text-xs">
-              <span className="link">English</span>
-              <span className="link">$ USD - U.S. Dollar</span>
-              <span className="link">United States</span>
-            </div>
           </div>
         </div>
       </div>
