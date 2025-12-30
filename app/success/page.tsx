@@ -218,8 +218,11 @@ function Success() {
               </div>
 
               <div className="mt-8 pt-5 border-t">
-                <Link href="/" className="button w-full text-center block">
-                  Return to Home
+                <Link
+                  href="/orders"
+                  className="button w-full text-center block"
+                >
+                  View your orders
                 </Link>
               </div>
             </>
