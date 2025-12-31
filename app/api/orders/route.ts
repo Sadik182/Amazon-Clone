@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as admin from "firebase-admin";
-import serviceAccount from "../../../firebasePermissions.json";
 
 // Secure Firebase Connection by checking if the app is already initialized
 if (!admin.apps.length) {
+  const serviceAccount = JSON.parse(
+    process.env.FIREBASE_SERVICE_ACCOUNT || "{}"
+  );
   admin.initializeApp({
     credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
   });
