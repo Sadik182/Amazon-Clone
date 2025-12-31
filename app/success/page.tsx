@@ -2,9 +2,19 @@
 import Header from "@/components/Header/Header";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { clearBasket } from "@/slices/basketSlice";
+import { useEffect } from "react";
 
 function Success() {
   const router = useRouter();
+  const dispatch = useDispatch();
+
+  // Clear basket when success page loads (order confirmed)
+  useEffect(() => {
+    dispatch(clearBasket());
+  }, [dispatch]);
+
   return (
     <div className="bg-gray-100 h-screen">
       <Header />
