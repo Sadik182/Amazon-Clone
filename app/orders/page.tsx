@@ -100,7 +100,7 @@ function Orders() {
       <Header />
       <main className="max-w-5xl mx-auto p-5">
         <div className="mb-6">
-          <h1 className="text-3xl font-semibold">Your Orders</h1>
+          <h1 className="text-3xl font-semibold border-b">Your Orders</h1>
           {orders.length > 0 && (
             <p className="text-gray-600 mt-1">
               {orders.length} {orders.length === 1 ? "order" : "orders"}
@@ -129,7 +129,7 @@ function Orders() {
                 className="bg-gray-50 p-5 border border-gray-200"
               >
                 <div className="flex justify-between items-start mb-4">
-                  <div className="flex justify-between w-full">
+                  <div className="flex justify-between w-full bg-gray-100 text-gray-600 p-4 rounded-md">
                     <div className="flex items-center gap-4 mb-2">
                       <div>
                         <p className="text-sm text-gray-600 font-bold">
